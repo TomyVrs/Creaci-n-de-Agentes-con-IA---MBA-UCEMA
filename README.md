@@ -63,6 +63,15 @@ Prompts principales usados durante el proceso:
 
 26. "En las conclusiones quiero que tambien haya conclusiones respecto a variacion de costos, inflacion, devaluacion y precios. Separar y mejorar la visual del dashboard: resumen, comparativas, analisis y conclusiones."
 
+La iteracion fue incremental. Primero defini el problema de negocio y el alcance minimo. Despues fui agregando reglas de costeo, monedas, mensualizacion, dashboard, fuentes externas, precio target y configuracion general. Cada vez que aparecio un error, lo pase textual y el agente ajusto la logica o el parseo de datos.
+
+Ejemplos de iteracion:
+
+- El TC de Rofex primero se intento leer desde el HTML visible, pero la tabla real venia de una API de CEM / MATBA Rofex.
+- BADLAR fallaba porque la API del BCRA no usaba el simbolo `%` en la unidad; se ajusto la busqueda por descripcion y TNA.
+- BNA devolvia `1485.0000` y la app lo interpretaba como miles; se agrego un parser especifico para esa fuente.
+- Se separo mes seleccionado de mes vigente real para evitar que la app confundiera el mes que se esta editando con el mes calendario actual.
+
 ## Que funciona
 
 La app funciona abriendo el archivo `index.html` en un navegador.
@@ -190,6 +199,22 @@ Se agrego una capa de configuracion general de pricing:
 
 Cada mes queda editable luego de aplicar la configuracion general, funcionando como override mensual.
 
+## Logica agentica
+
+El agente no solo genero codigo, sino que actuo como un asistente de producto y desarrollo. Tomo una necesidad de negocio amplia, la transformo en reglas, formulas, pantallas, datos de entrada y salidas esperadas.
+
+La logica agentica del proceso fue:
+
+- Interpretar el objetivo de negocio: automatizar estructuras de costo y rentabilidad para aires acondicionados residenciales.
+- Hacer preguntas y convertir respuestas en reglas concretas de calculo.
+- Construir una primera version funcional y luego mejorarla por iteraciones.
+- Usar herramientas para leer y modificar archivos del repositorio.
+- Consultar fuentes publicas cuando el dato dependia de informacion actualizada: MATBA Rofex, BNA, BCRA e INDEC.
+- Validar errores reales reportados por el usuario y corregir la causa, no solo el sintoma.
+- Documentar el proceso en el README para que quede trazabilidad de prompts, decisiones, fallas y aprendizajes.
+
+En este caso el agente funciono como un copiloto tecnico: yo aporte contexto, reglas de negocio y criterios de uso; el agente tradujo eso a una app, verifico fuentes externas, corrigio bugs y mantuvo la documentacion alineada con el avance.
+
 ## Que falta o que fallo
 
 La app ya guarda la informacion mensual en el navegador y permite importar productos desde template.
@@ -213,3 +238,4 @@ Aprendi que trabajar con agentes de IA no es solamente pedir "haceme una app", s
 Tambien entendi que conviene empezar con un alcance chico, pero suficientemente realista para que represente el problema.
 El agente ayudo a transformar una necesidad de negocio en formulas, inputs, outputs y una primera herramienta usable.
 La parte mas importante fue explicitar supuestos: moneda, tipo de cambio, tarifas, margen bruto, financiacion, plazo de venta y mensualizacion.
+Tambien aprendi que el trabajo con agentes mejora cuando uno prueba, detecta errores concretos y vuelve con evidencia: el agente puede investigar la causa, ajustar el codigo y documentar la decision.

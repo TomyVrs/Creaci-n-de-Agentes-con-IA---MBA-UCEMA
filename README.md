@@ -1,17 +1,10 @@
 # Calculadora de Costos y Precio Objetivo para Aires Acondicionados
 
-## Resumen para la correccion
+## Resumen del proyecto
 
-Este README esta organizado para responder directamente a la rubrica de evaluacion:
-
-| Criterio | Peso | Donde se evidencia |
-| --- | ---: | --- |
-| Proceso documentado | 40% | En `Como se lo pedi`, con los prompts principales y la iteracion completa desde la idea inicial hasta las correcciones de TC, BADLAR, dashboard y precios target. |
-| Comprension de la logica agentica | 30% | En `Logica agentica`, donde explico que hizo el agente, por que fue util y como combino contexto de negocio, desarrollo, datos externos, validacion y documentacion. |
-| Resultado funcionando | 20% | En `Que funciona`, con las funcionalidades implementadas, reglas de calculo, fuentes automaticas, dashboard, templates y validaciones realizadas. |
-| Reflexion sobre faltantes y aprendizajes | 10% | En `Que falta o que fallo` y `Que aprendi`, con limites actuales, errores encontrados y aprendizajes sobre trabajar con agentes. |
-
-El objetivo no fue construir un sistema enterprise, sino un prototipo funcional y defendible para mostrar como un agente de IA puede ayudar a transformar una necesidad real de negocio en una herramienta usable.
+Este trabajo documenta el proceso de construccion de un prototipo funcional usando Codex como agente de IA.
+El objetivo fue partir de una necesidad real de negocio, definir reglas de calculo, construir una primera herramienta usable e ir corrigiendola a partir de pruebas concretas.
+El resultado no busca reemplazar un sistema enterprise, sino demostrar como un agente puede asistir en el analisis, desarrollo, validacion y documentacion de una solucion aplicada.
 
 ## Que construi
 

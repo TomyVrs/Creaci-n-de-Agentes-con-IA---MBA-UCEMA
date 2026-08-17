@@ -1,5 +1,18 @@
 # Calculadora de Costos y Precio Objetivo para Aires Acondicionados
 
+## Resumen para la correccion
+
+Este README esta organizado para responder directamente a la rubrica de evaluacion:
+
+| Criterio | Peso | Donde se evidencia |
+| --- | ---: | --- |
+| Proceso documentado | 40% | En `Como se lo pedi`, con los prompts principales y la iteracion completa desde la idea inicial hasta las correcciones de TC, BADLAR, dashboard y precios target. |
+| Comprension de la logica agentica | 30% | En `Logica agentica`, donde explico que hizo el agente, por que fue util y como combino contexto de negocio, desarrollo, datos externos, validacion y documentacion. |
+| Resultado funcionando | 20% | En `Que funciona`, con las funcionalidades implementadas, reglas de calculo, fuentes automaticas, dashboard, templates y validaciones realizadas. |
+| Reflexion sobre faltantes y aprendizajes | 10% | En `Que falta o que fallo` y `Que aprendi`, con limites actuales, errores encontrados y aprendizajes sobre trabajar con agentes. |
+
+El objetivo no fue construir un sistema enterprise, sino un prototipo funcional y defendible para mostrar como un agente de IA puede ayudar a transformar una necesidad real de negocio en una herramienta usable.
+
 ## Que construi
 
 Construi una app web simple en HTML para costear varios SKUs de aires acondicionados residenciales.
@@ -198,6 +211,14 @@ Se agrego una capa de configuracion general de pricing:
 - `Sugerir futuros 12 meses`: calcula y aplica precios target en todos los meses futuros de la serie.
 
 Cada mes queda editable luego de aplicar la configuracion general, funcionando como override mensual.
+
+Validaciones realizadas durante la prueba final:
+
+- Actualizacion de curva Rofex para mes vigente real y meses futuros: 5 meses actualizados, 0 fallidos.
+- Actualizacion de meses cerrados con TC BNA y BADLAR BCRA: 7 meses actualizados, 0 fallidos.
+- Sugerencia de precios futuros: 12 precios sugeridos en 4 meses futuros.
+- Dashboard validado con datos visibles para meses cerrados.
+- Dashboard validado para periodo futuro; la inflacion aparece como `s/d` cuando aun no existe dato oficial publicado, lo cual es correcto.
 
 ## Logica agentica
 

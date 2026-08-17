@@ -1,0 +1,2088 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Costeo AA Residenciales</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    :root {
+      --page: #eef3f8;
+      --panel: #ffffff;
+      --panel-soft: #f8fbfe;
+      --navy: #0b2942;
+      --blue: #005da8;
+      --blue-2: #0072ce;
+      --cyan: #00a3e0;
+      --text: #17212f;
+      --muted: #637083;
+      --line: #d8e2ec;
+      --line-strong: #b7c7d8;
+      --danger: #b42318;
+      --ok: #067647;
+      --shadow: 0 14px 35px rgba(11, 41, 66, .10);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, #e8f2fb 0, #f6f8fb 260px, var(--page) 100%);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.35;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--navy), #123d61 58%, var(--blue));
+      color: #fff;
+      padding: 26px 28px;
+      border-bottom: 5px solid var(--cyan);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+
+    .brand-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 78px;
+      height: 38px;
+      border: 1px solid rgba(255, 255, 255, .45);
+      border-radius: 6px;
+      font-weight: 800;
+      letter-spacing: 0;
+      background: rgba(255, 255, 255, .12);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 25px;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 7px 0 0;
+      color: #d8e8f7;
+      max-width: 960px;
+    }
+
+    main {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 22px;
+      display: grid;
+      gap: 18px;
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 18px 12px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #fff, var(--panel-soft));
+    }
+
+    .section-head h2 {
+      margin: 0;
+      font-size: 17px;
+      color: var(--navy);
+    }
+
+    .section-head p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .month-strip {
+      display: grid;
+      grid-template-columns: minmax(220px, 320px) 1fr auto;
+      gap: 14px;
+      align-items: end;
+      padding: 16px 18px 18px;
+      background: #fff;
+    }
+
+    .month-note {
+      color: var(--muted);
+      font-size: 13px;
+      padding-bottom: 8px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 12px;
+      padding: 16px 18px 18px;
+    }
+
+    .tariff-grid { grid-template-columns: repeat(3, minmax(220px, 1fr)); }
+
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    input,
+    select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 8px 9px;
+      background: #fff;
+      color: var(--text);
+      font: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: var(--blue-2);
+      box-shadow: 0 0 0 3px rgba(0, 114, 206, .14);
+    }
+
+    .money-input {
+      display: grid;
+      grid-template-columns: 1fr 76px;
+      gap: 6px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      padding: 0 18px 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      min-height: 38px;
+      border: 1px solid var(--blue);
+      border-radius: 6px;
+      padding: 8px 12px;
+      background: var(--blue);
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    button:hover { background: #004f8f; }
+
+    button.secondary {
+      background: #fff;
+      color: var(--blue);
+    }
+
+    button.secondary:hover { background: #eef7ff; }
+
+    .table-wrap {
+      overflow-x: auto;
+      padding: 0 18px 18px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1420px;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      padding: 8px;
+      text-align: right;
+      vertical-align: middle;
+      white-space: nowrap;
+      background: #fff;
+    }
+
+    th {
+      background: #e8f1fa;
+      color: #274158;
+      font-size: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:nth-child(even) td { background: #fbfdff; }
+
+    td:first-child,
+    th:first-child {
+      text-align: left;
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      background: #fff;
+    }
+
+    th:first-child {
+      background: #e8f1fa;
+      z-index: 3;
+    }
+
+    td input,
+    td select {
+      min-height: 32px;
+      padding: 5px 6px;
+      font-size: 13px;
+    }
+
+    .sku-col { width: 170px; min-width: 170px; }
+    .num-col { width: 105px; min-width: 105px; }
+    .result { font-variant-numeric: tabular-nums; font-weight: 700; }
+    .positive { color: var(--ok); }
+    .negative { color: var(--danger); }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(145px, 1fr));
+      gap: 12px;
+      padding: 16px 18px 18px;
+    }
+
+    .macro-summary {
+      grid-template-columns: repeat(4, minmax(170px, 1fr));
+      padding: 12px 0 0;
+    }
+
+    .dashboard-block {
+      margin: 0 18px 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .dashboard-block h3 {
+      margin: 0;
+      padding: 12px 14px;
+      color: var(--navy);
+      font-size: 14px;
+      background: #f6faff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dashboard-block .summary {
+      padding: 14px;
+    }
+
+    .dashboard-controls {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(120px, 180px)) 1fr auto auto;
+      gap: 12px;
+      align-items: end;
+      padding: 16px 18px 6px;
+    }
+
+    .filter-panel {
+      padding: 0 18px 16px;
+    }
+
+    .filter-title {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .filter-list {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      min-height: 38px;
+      align-items: center;
+    }
+
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      background: #fff;
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: none;
+    }
+
+    .filter-chip input {
+      width: 16px;
+      min-height: 16px;
+      margin: 0;
+      box-shadow: none;
+    }
+
+    .chart-area {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      padding: 14px;
+    }
+
+    .chart-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .chart-panel h3 {
+      margin: 0 0 12px;
+      color: var(--navy);
+      font-size: 15px;
+    }
+
+    .chart-panel .summary {
+      grid-template-columns: 1fr;
+      padding: 0;
+      gap: 10px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: 165px 1fr 92px;
+      gap: 10px;
+      align-items: center;
+      margin: 10px 0;
+      font-size: 13px;
+    }
+
+    .bar-name {
+      color: var(--text);
+      font-weight: 700;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .bar-track {
+      height: 12px;
+      border-radius: 999px;
+      background: #e8f1fa;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      min-width: 2px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+    }
+
+    .bar-value {
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+      text-align: right;
+    }
+
+    .empty-state {
+      color: var(--muted);
+      font-size: 13px;
+      padding: 10px 0;
+    }
+
+    .insight-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .insight-list li {
+      border-left: 4px solid var(--blue-2);
+      background: #f7fbff;
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .section-toggle {
+      min-width: 34px;
+      padding: 0 10px;
+      background: #fff;
+      color: var(--blue);
+    }
+
+    .section-body { display: block; }
+    section.collapsed .section-body { display: none; }
+
+    .source-status {
+      grid-column: 1 / -1;
+      color: var(--muted);
+      font-size: 12px;
+      min-height: 18px;
+    }
+
+    .file-input {
+      display: block;
+      min-height: 38px;
+      padding: 7px;
+      border: 1px dashed var(--line-strong);
+      border-radius: 6px;
+      background: #f8fbfe;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--blue-2);
+      border-radius: 8px;
+      padding: 12px;
+      background: linear-gradient(180deg, #fff, #f7fbff);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 7px;
+      font-size: 17px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 18px 16px;
+    }
+
+    .target-status {
+      color: var(--muted);
+      font-size: 12px;
+      padding: 0 18px 14px;
+    }
+
+    @media (max-width: 1100px) {
+      .grid,
+      .tariff-grid,
+      .summary,
+      .month-strip,
+      .dashboard-controls,
+      .chart-area { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      header { padding: 20px 18px; }
+      .header-inner { display: grid; }
+      main { padding: 14px; }
+      .grid,
+      .tariff-grid,
+      .summary,
+      .month-strip,
+      .dashboard-controls,
+      .chart-area,
+      .bar-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div>
+        <h1>Costeo mensual y precio objetivo de aires acondicionados</h1>
+        <p>Modelo parametrizable por mes para calcular costo total, precio con IVA, margen bruto y margen neto financiero por SKU.</p>
+      </div>
+      <div class="brand-mark">BGH</div>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>Dashboard comercial</h2>
+          <p>Consolidado del período elegido, con filtros por modelo y apertura de rubros de costo.</p>
+        </div>
+      </div>
+      <div class="dashboard-controls">
+        <label>Desde mes
+          <select id="dashboardFromMonth"></select>
+        </label>
+        <label>Desde año
+          <input id="dashboardFromYear" type="number" min="2024" max="2035" step="1" value="2026">
+        </label>
+        <label>Hasta mes
+          <select id="dashboardToMonth"></select>
+        </label>
+        <label>Hasta año
+          <input id="dashboardToYear" type="number" min="2024" max="2035" step="1" value="2026">
+        </label>
+        <label>SKU base
+          <select id="benchmarkSku"><option value="__auto">Auto mayor volumen</option></select>
+        </label>
+        <div class="month-note">El tablero suma solo el período seleccionado. Podes filtrar uno o mas modelos para analizar variantes puntuales.</div>
+        <button id="selectAllModels" class="secondary" type="button">Todos</button>
+        <button id="clearModels" class="secondary" type="button">Limpiar</button>
+      </div>
+      <div class="filter-panel">
+        <p class="filter-title">Modelos</p>
+        <div id="modelFilters" class="filter-list"></div>
+      </div>
+      <div class="dashboard-block">
+        <h3>Resumen comercial</h3>
+        <div class="summary">
+          <div class="metric"><span>Venta sin IVA</span><strong id="dashRevenue">0</strong></div>
+          <div class="metric"><span>Unidades</span><strong id="dashUnits">0</strong></div>
+          <div class="metric"><span>Margen bruto</span><strong id="dashGross">0</strong></div>
+          <div class="metric"><span>Margen bruto %</span><strong id="dashGrossPct">0%</strong></div>
+          <div class="metric"><span>Margen neto</span><strong id="dashNet">0</strong></div>
+          <div class="metric"><span>Margen neto %</span><strong id="dashNetPct">0%</strong></div>
+          <div class="metric"><span>Costo financiero</span><strong id="dashFinance">0</strong></div>
+        </div>
+      </div>
+      <div class="dashboard-block">
+        <h3>Comparativas del periodo</h3>
+        <div class="summary macro-summary">
+          <div class="metric"><span>Inflacion oficial</span><strong id="dashInflation">s/d</strong></div>
+          <div class="metric"><span>Devaluacion</span><strong id="dashDevaluation">s/d</strong></div>
+          <div class="metric"><span>Precio SKU base</span><strong id="dashPriceEvolution">s/d</strong></div>
+          <div class="metric"><span>Costo SKU base</span><strong id="dashCostEvolution">s/d</strong></div>
+        </div>
+        <p id="macroStatus" class="note">La inflacion usa IPC Nacional INDEC via API oficial de Series de Tiempo. El SKU base automatico es el de mayor volumen del periodo filtrado.</p>
+      </div>
+      <div class="dashboard-block">
+        <h3>Analisis de costos</h3>
+        <div class="chart-area">
+          <div class="chart-panel">
+            <h3>Peso relativo de rubros sobre costo</h3>
+            <div id="costBreakdownChart"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dashboard-block">
+        <h3>Conclusiones</h3>
+        <div class="chart-area">
+          <ul id="dashboardInsights" class="insight-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>Plan mensual</h2>
+          <p>Cada mes tiene sus propias variables: tipo de cambio, tarifas, TNA, precios, cantidades y plazos.</p>
+        </div>
+      </div>
+      <div class="month-strip">
+        <label>Mes de trabajo
+          <select id="monthSelect"></select>
+        </label>
+        <label>Año
+          <input id="workYear" type="number" min="2024" max="2035" step="1" value="2026">
+        </label>
+        <div class="month-note">Al cambiar de mes, la app guarda los valores del mes actual y carga los valores del nuevo mes. Tambien queda guardado en este navegador.</div>
+        <button id="copyNextMonth" class="secondary" type="button">Copiar al mes siguiente</button>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>Parametros generales</h2>
+          <p>Variables macro y comerciales del mes seleccionado.</p>
+        </div>
+      </div>
+      <div class="grid">
+        <label>TC mes seleccionado <input id="exchangeRate" type="number" min="0" step="0.01" value="1350"></label>
+        <label>Actualizar TC del mes seleccionado
+          <button id="fetchRofexFx" class="secondary" type="button">Actualizar mes</button>
+        </label>
+        <label>Rofex: mes vigente real + futuros
+          <button id="updateFutureFxSeries" class="secondary" type="button">Actualizar curva</button>
+        </label>
+        <label>Cerrados: BNA + BADLAR
+          <button id="updateClosedMacroSeries" class="secondary" type="button">Actualizar cerrados</button>
+        </label>
+        <label>Vista general <select id="viewCurrency"><option value="ARS">PES</option><option value="USD">USD</option></select></label>
+        <label>IVA % <input id="ivaRate" type="number" min="0" step="0.01" value="21"></label>
+        <label>Desgravacion % <input id="taxReliefRate" type="number" min="0" step="0.01" value="21"></label>
+        <label>IIBB % <input id="iibbRate" type="number" min="0" step="0.01" value="3.5"></label>
+        <label>Debito/Credito % <input id="bankTaxRate" type="number" min="0" step="0.01" value="1.2"></label>
+        <label>TNA financiera % <input id="tnaRate" type="number" min="0" step="0.01" value="65"></label>
+        <label>BADLAR mes seleccionado
+          <button id="fetchBadlar" class="secondary" type="button">Actualizar TNA mes</button>
+        </label>
+        <label>Scrap produccion % <input id="scrapRate" type="number" min="0" step="0.01" value="1"></label>
+        <div id="rateStatus" class="source-status"></div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>Tarifas de costeo</h2>
+          <p>Importes en pesos o dolares. La app calcula en pesos y permite visualizar tambien en dolares.</p>
+        </div>
+      </div>
+      <div class="grid tariff-grid">
+        <label>Flete internacional <span class="money-input"><input id="intlFreight" type="number" min="0" step="0.01" value="4200"><select id="intlFreightCurrency"><option>USD</option><option>ARS</option></select></span></label>
+        <label>Stuffing contenedor <input id="containerStuffing" type="number" min="1" step="1" value="220"></label>
+        <label>Flete local IDA <span class="money-input"><input id="localFreightOut" type="number" min="0" step="0.01" value="180000"><select id="localFreightOutCurrency"><option>ARS</option><option>USD</option></select></span></label>
+        <label>Stuffing camion IDA <input id="truckStuffingOut" type="number" min="1" step="1" value="60"></label>
+        <label>Costo horario produccion <span class="money-input"><input id="hourlyCost" type="number" min="0" step="0.01" value="12500"><select id="hourlyCostCurrency"><option>ARS</option><option>USD</option></select></span></label>
+        <label>Flete local VUELTA <span class="money-input"><input id="localFreightBack" type="number" min="0" step="0.01" value="160000"><select id="localFreightBackCurrency"><option>ARS</option><option>USD</option></select></span></label>
+        <label>Stuffing camion VUELTA <input id="truckStuffingBack" type="number" min="1" step="1" value="60"></label>
+        <label>IN deposito <span class="money-input"><input id="warehouseIn" type="number" min="0" step="0.01" value="1800"><select id="warehouseInCurrency"><option>ARS</option><option>USD</option></select></span></label>
+        <label>OUT deposito <span class="money-input"><input id="warehouseOut" type="number" min="0" step="0.01" value="2200"><select id="warehouseOutCurrency"><option>ARS</option><option>USD</option></select></span></label>
+        <label>Tarifa distribucion x m3 <span class="money-input"><input id="distributionRate" type="number" min="0" step="0.01" value="19000"><select id="distributionRateCurrency"><option>ARS</option><option>USD</option></select></span></label>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>SKUs del mes</h2>
+          <p>Precios, unidades y plazos quedan asociados al mes seleccionado.</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="addRow" type="button">Agregar SKU</button>
+        <button id="suggestFuturePrices" class="secondary" type="button">Sugerir mes seleccionado</button>
+        <button id="suggestFuturePricesSeries" class="secondary" type="button">Sugerir futuros 12 meses</button>
+        <button id="saveMasterPricing" class="secondary" type="button">Guardar configuracion general</button>
+        <button id="applyMasterPricing" class="secondary" type="button">Aplicar general a 12 meses</button>
+        <button id="resetRows" class="secondary" type="button">Restaurar ejemplo del mes</button>
+        <a href="template_productos.csv" download>Descargar template CSV</a>
+        <input id="productFile" class="file-input" type="file" accept=".csv,.tsv,.xlsx,.xls">
+      </div>
+      <div class="grid">
+        <label>Referencia precio
+          <select id="targetReferenceSku"><option value="__auto">Auto mayor volumen</option></select>
+        </label>
+        <label>Objetivo target
+          <select id="targetMode">
+            <option value="current">Mantener margen neto % mes vigente real</option>
+            <option value="pct">Margen neto objetivo %</option>
+            <option value="value">Margen neto objetivo $ unitario</option>
+          </select>
+        </label>
+        <label>Margen neto objetivo % <input id="targetMarginPct" type="number" min="-100" step="0.1" value="15"></label>
+        <label>Margen neto objetivo $ <input id="targetMarginValue" type="number" step="100" value="0"></label>
+        <div class="month-note">El precio target se calcula sobre el SKU referencia y el resto respeta su price index. Estos parametros pueden guardarse como configuracion general o editarse por mes como excepcion.</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sku-col">SKU</th><th class="num-col">FOB USD</th><th class="num-col">m3</th><th class="num-col">Tiempo hs</th><th class="num-col">Precio c/IVA</th><th class="num-col">Moneda</th><th class="num-col">Price index</th><th class="num-col">Plazo dias</th><th class="num-col">Unidades</th>
+              <th>FOB</th><th>Log. internacional</th><th>Log. IDA</th><th>Produccion</th><th>Log. VUELTA</th><th>Almacenamiento</th><th>Distribucion</th><th>Impuestos</th><th>Costo total</th><th>Precio s/IVA</th><th>Desgravacion</th><th>Precio c/IVA</th><th>Precio target</th><th>Margen bruto</th><th>Margen bruto %</th><th>Costo financiero</th><th>Margen neto</th><th>Margen neto %</th><th>Total margen neto</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="skuBody"></tbody>
+        </table>
+      </div>
+      <p class="note">Formula financiera: Precio de venta sin IVA x TNA x plazo en dias / 360.</p>
+      <p id="targetStatus" class="target-status">Meses cerrados y mes vigente real: el precio es manual o viene del template. Meses futuros: la app puede sugerir precios para el mes seleccionado o para toda la serie futura de 12 meses.</p>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>Resumen consolidado</h2>
+          <p>Totales ponderados por unidades del mes seleccionado.</p>
+        </div>
+      </div>
+      <div class="summary">
+        <div class="metric"><span>Unidades</span><strong id="sumUnits">0</strong></div>
+        <div class="metric"><span>Venta sin IVA</span><strong id="sumRevenue">0</strong></div>
+        <div class="metric"><span>Margen bruto</span><strong id="sumGross">0</strong></div>
+        <div class="metric"><span>Margen bruto %</span><strong id="sumGrossPct">0%</strong></div>
+        <div class="metric"><span>Costo financiero</span><strong id="sumFinance">0</strong></div>
+        <div class="metric"><span>Margen neto</span><strong id="sumNet">0</strong></div>
+        <div class="metric"><span>Margen neto %</span><strong id="sumNetPct">0%</strong></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const months = [
+      "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+      "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    const fieldIds = [
+      "exchangeRate", "ivaRate", "taxReliefRate", "iibbRate", "bankTaxRate", "tnaRate", "scrapRate",
+      "intlFreight", "intlFreightCurrency", "containerStuffing", "localFreightOut", "localFreightOutCurrency",
+      "truckStuffingOut", "hourlyCost", "hourlyCostCurrency", "localFreightBack", "localFreightBackCurrency",
+      "truckStuffingBack", "warehouseIn", "warehouseInCurrency", "warehouseOut", "warehouseOutCurrency",
+      "distributionRate", "distributionRateCurrency", "targetReferenceSku", "targetMode", "targetMarginPct", "targetMarginValue"
+    ];
+    const initialRows = [
+      { sku: "Split 3000W ON/OFF", fob: 205, m3: 0.32, hours: 0.75, price: 738100, priceCurrency: "ARS", priceIndex: 100, termDays: 30, units: 1200 },
+      { sku: "Split 4500W Inverter", fob: 315, m3: 0.44, hours: 0.95, price: 1101100, priceCurrency: "ARS", priceIndex: 149, termDays: 45, units: 850 },
+      { sku: "Split 5500W Inverter", fob: 390, m3: 0.52, hours: 1.1, price: 1355200, priceCurrency: "ARS", priceIndex: 184, termDays: 60, units: 420 }
+    ];
+    const costRubrics = [
+      { key: "fobCost", label: "FOB" },
+      { key: "intlCost", label: "Log. internacional" },
+      { key: "outCost", label: "Log. IDA" },
+      { key: "productionCost", label: "Produccion" },
+      { key: "backCost", label: "Log. VUELTA" },
+      { key: "warehouseCost", label: "Almacenamiento" },
+      { key: "distributionCost", label: "Distribucion" },
+      { key: "taxCost", label: "Impuestos" }
+    ];
+    const skuBody = document.getElementById("skuBody");
+    const monthSelect = document.getElementById("monthSelect");
+    const workYear = document.getElementById("workYear");
+    const dashboardFromMonth = document.getElementById("dashboardFromMonth");
+    const dashboardToMonth = document.getElementById("dashboardToMonth");
+    const dashboardFromYear = document.getElementById("dashboardFromYear");
+    const dashboardToYear = document.getElementById("dashboardToYear");
+    const benchmarkSku = document.getElementById("benchmarkSku");
+    const targetReferenceSku = document.getElementById("targetReferenceSku");
+    const modelFilters = document.getElementById("modelFilters");
+    let currentMonth = "Enero";
+    let isLoading = false;
+    let monthlyData = {};
+    let selectedModels = new Set();
+    let modelFiltersInitialized = false;
+    let inflationCache = null;
+    let dashboardRequestId = 0;
+    let masterPricing = null;
+
+    const readNumber = (id) => Number(document.getElementById(id).value) || 0;
+    const exchangeRate = () => readNumber("exchangeRate") || 1;
+    const moneyToArs = (value, currency) => currency === "USD" ? value * exchangeRate() : value;
+    const displayCurrency = () => document.getElementById("viewCurrency").value;
+    const fromArs = (value, rate = exchangeRate()) => displayCurrency() === "USD" ? value / (rate || 1) : value;
+    const safeDivide = (value, divisor) => divisor > 0 ? value / divisor : 0;
+    const numericField = (fields, id) => Number(fields[id]) || 0;
+    const periodKey = (year, month) => `${year}-${month}`;
+    const currentPeriodKey = () => periodKey(workYear.value || 2026, currentMonth);
+    const periodNumber = (year, month) => Number(year) * 12 + months.indexOf(month);
+
+    function clone(value) {
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function calendarCurrentPeriod() {
+      const today = new Date();
+      return { year: today.getFullYear(), month: months[today.getMonth()], period: today.getFullYear() * 12 + today.getMonth() };
+    }
+
+    function isFuturePeriod(year, month) {
+      return periodNumber(year, month) > calendarCurrentPeriod().period;
+    }
+
+    function periodStatus(year, month) {
+      const selected = periodNumber(year, month);
+      const current = calendarCurrentPeriod().period;
+      if (selected < current) return "closed";
+      if (selected === current) return "current";
+      return "future";
+    }
+
+    function periodDateFromNumber(period) {
+      const year = Math.floor(period / 12);
+      const monthIndex = period % 12;
+      return `${year}-${String(monthIndex + 1).padStart(2, "0")}-01`;
+    }
+
+    function defaultState(monthIndex = 0) {
+      return {
+        fields: {
+          exchangeRate: 1350 + monthIndex * 20,
+          ivaRate: 21,
+          taxReliefRate: 21,
+          iibbRate: 3.5,
+          bankTaxRate: 1.2,
+          tnaRate: 65,
+          scrapRate: 1,
+          intlFreight: 4200,
+          intlFreightCurrency: "USD",
+          containerStuffing: 220,
+          localFreightOut: 180000,
+          localFreightOutCurrency: "ARS",
+          truckStuffingOut: 60,
+          hourlyCost: 12500,
+          hourlyCostCurrency: "ARS",
+          localFreightBack: 160000,
+          localFreightBackCurrency: "ARS",
+          truckStuffingBack: 60,
+          warehouseIn: 1800,
+          warehouseInCurrency: "ARS",
+          warehouseOut: 2200,
+          warehouseOutCurrency: "ARS",
+          distributionRate: 19000,
+          distributionRateCurrency: "ARS",
+          targetReferenceSku: "__auto",
+          targetMode: "current",
+          targetMarginPct: 15,
+          targetMarginValue: 0
+        },
+        rows: clone(initialRows)
+      };
+    }
+
+    function migrateLegacyPrices(data) {
+      Object.values(data).forEach((state) => {
+        if (!state || !state.fields || !Array.isArray(state.rows)) return;
+        const iva = (Number(state.fields.ivaRate) || 21) / 100;
+        state.fields.taxReliefRate = state.fields.taxReliefRate ?? 21;
+        state.rows.forEach((row) => {
+          row.price = (Number(row.price) || 0) * (1 + iva);
+        });
+      });
+    }
+
+    function formatMoney(value) {
+      const currency = displayCurrency();
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency,
+        maximumFractionDigits: currency === "USD" ? 2 : 0
+      }).format(fromArs(value));
+    }
+
+    function formatDisplayMoney(value) {
+      const currency = displayCurrency();
+      return new Intl.NumberFormat("es-AR", {
+        style: "currency",
+        currency,
+        maximumFractionDigits: currency === "USD" ? 2 : 0
+      }).format(value);
+    }
+
+    function formatPercent(value) {
+      return new Intl.NumberFormat("es-AR", {
+        style: "percent",
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+      }).format(value || 0);
+    }
+
+    function formatUnits(value) {
+      return new Intl.NumberFormat("es-AR", { maximumFractionDigits: 0 }).format(value || 0);
+    }
+
+    function captureRows() {
+      return Array.from(skuBody.querySelectorAll("tr")).map((row) => ({
+        sku: row.querySelector(".sku").value,
+        fob: Number(row.querySelector(".fob").value) || 0,
+        m3: Number(row.querySelector(".m3").value) || 0,
+        hours: Number(row.querySelector(".hours").value) || 0,
+        price: Number(row.querySelector(".price").value) || 0,
+        priceCurrency: row.querySelector(".priceCurrency").value,
+        priceIndex: Number(row.querySelector(".priceIndex").value) || 100,
+        termDays: Number(row.querySelector(".termDays").value) || 0,
+        units: Number(row.querySelector(".units").value) || 0
+      }));
+    }
+
+    function captureFieldsFromInputs() {
+      const fields = {};
+      fieldIds.forEach((id) => {
+        fields[id] = document.getElementById(id).value;
+      });
+      return fields;
+    }
+
+    function rowDataFromDom(row) {
+      return {
+        sku: row.querySelector(".sku").value,
+        fob: Number(row.querySelector(".fob").value) || 0,
+        m3: Number(row.querySelector(".m3").value) || 0,
+        hours: Number(row.querySelector(".hours").value) || 0,
+        price: Number(row.querySelector(".price").value) || 0,
+        priceCurrency: row.querySelector(".priceCurrency").value,
+        priceIndex: Number(row.querySelector(".priceIndex").value) || 100,
+        termDays: Number(row.querySelector(".termDays").value) || 0,
+        units: Number(row.querySelector(".units").value) || 0
+      };
+    }
+
+    function captureState() {
+      return { fields: captureFieldsFromInputs(), rows: captureRows() };
+    }
+
+    function moneyToArsFromFields(value, currency, fields) {
+      return currency === "USD" ? value * (numericField(fields, "exchangeRate") || 1) : value;
+    }
+
+    function calculateStoredRow(fields, row) {
+      const iva = numericField(fields, "ivaRate") / 100;
+      const priceWithVat = moneyToArsFromFields(Number(row.price) || 0, row.priceCurrency, fields);
+      const priceNoVat = iva > -1 ? priceWithVat / (1 + iva) : priceWithVat;
+      const taxRelief = priceNoVat * (numericField(fields, "taxReliefRate") / 100);
+      const marginBase = priceNoVat + taxRelief;
+      const taxes = (numericField(fields, "iibbRate") + numericField(fields, "bankTaxRate")) / 100;
+      const tna = numericField(fields, "tnaRate") / 100;
+      const scrap = numericField(fields, "scrapRate") / 100;
+      const units = Number(row.units) || 0;
+      const values = {
+        fobCost: (Number(row.fob) || 0) * (numericField(fields, "exchangeRate") || 1),
+        intlCost: safeDivide(moneyToArsFromFields(numericField(fields, "intlFreight"), fields.intlFreightCurrency, fields), numericField(fields, "containerStuffing")),
+        outCost: safeDivide(moneyToArsFromFields(numericField(fields, "localFreightOut"), fields.localFreightOutCurrency, fields), numericField(fields, "truckStuffingOut")),
+        productionCost: moneyToArsFromFields(numericField(fields, "hourlyCost"), fields.hourlyCostCurrency, fields) * (Number(row.hours) || 0) + scrap * priceNoVat,
+        backCost: safeDivide(moneyToArsFromFields(numericField(fields, "localFreightBack"), fields.localFreightBackCurrency, fields), numericField(fields, "truckStuffingBack")),
+        warehouseCost: moneyToArsFromFields(numericField(fields, "warehouseIn"), fields.warehouseInCurrency, fields) + moneyToArsFromFields(numericField(fields, "warehouseOut"), fields.warehouseOutCurrency, fields),
+        distributionCost: moneyToArsFromFields(numericField(fields, "distributionRate"), fields.distributionRateCurrency, fields) * (Number(row.m3) || 0),
+        taxCost: priceNoVat * taxes
+      };
+      values.totalCost = costRubrics.reduce((sum, rubric) => sum + values[rubric.key], 0);
+      values.priceNoVat = priceNoVat;
+      values.taxRelief = taxRelief;
+      values.priceWithVat = priceWithVat;
+      values.grossMargin = marginBase - values.totalCost;
+      values.grossMarginPct = marginBase > 0 ? values.grossMargin / marginBase : 0;
+      values.financeCost = priceNoVat * tna * (Number(row.termDays) || 0) / 360;
+      values.netMargin = values.grossMargin - values.financeCost;
+      values.netMarginPct = marginBase > 0 ? values.netMargin / marginBase : 0;
+      return { sku: row.sku || "Sin SKU", units, priceNoVat, marginBase, values };
+    }
+
+    function fixedCostForTarget(fields, row) {
+      return (Number(row.fob) || 0) * (numericField(fields, "exchangeRate") || 1)
+        + safeDivide(moneyToArsFromFields(numericField(fields, "intlFreight"), fields.intlFreightCurrency, fields), numericField(fields, "containerStuffing"))
+        + safeDivide(moneyToArsFromFields(numericField(fields, "localFreightOut"), fields.localFreightOutCurrency, fields), numericField(fields, "truckStuffingOut"))
+        + moneyToArsFromFields(numericField(fields, "hourlyCost"), fields.hourlyCostCurrency, fields) * (Number(row.hours) || 0)
+        + safeDivide(moneyToArsFromFields(numericField(fields, "localFreightBack"), fields.localFreightBackCurrency, fields), numericField(fields, "truckStuffingBack"))
+        + moneyToArsFromFields(numericField(fields, "warehouseIn"), fields.warehouseInCurrency, fields)
+        + moneyToArsFromFields(numericField(fields, "warehouseOut"), fields.warehouseOutCurrency, fields)
+        + moneyToArsFromFields(numericField(fields, "distributionRate"), fields.distributionRateCurrency, fields) * (Number(row.m3) || 0);
+    }
+
+    function solveTargetPrice(fields, row, targetNetMarginPct = null, targetNetMarginValue = null) {
+      const iva = numericField(fields, "ivaRate") / 100;
+      const taxRelief = numericField(fields, "taxReliefRate") / 100;
+      const taxes = (numericField(fields, "iibbRate") + numericField(fields, "bankTaxRate")) / 100;
+      const scrap = numericField(fields, "scrapRate") / 100;
+      const financeRate = numericField(fields, "tnaRate") / 100 * (Number(row.termDays) || 0) / 360;
+      const marginBaseRate = 1 + taxRelief;
+      const netRateBeforeFixed = marginBaseRate - scrap - taxes - financeRate;
+      const denominator = targetNetMarginValue !== null
+        ? netRateBeforeFixed
+        : netRateBeforeFixed - targetNetMarginPct * marginBaseRate;
+      if (denominator <= 0) return null;
+      const priceNoVat = (fixedCostForTarget(fields, row) + (targetNetMarginValue || 0)) / denominator;
+      const priceWithVatArs = priceNoVat * (1 + iva);
+      const rate = numericField(fields, "exchangeRate") || 1;
+      return {
+        priceNoVat,
+        priceWithVatArs,
+        priceInput: row.priceCurrency === "USD" ? priceWithVatArs / rate : priceWithVatArs
+      };
+    }
+
+    function resolveTargetObjective(referenceRow, fields) {
+      const mode = fields.targetMode || "current";
+      if (mode === "pct") return { pct: numericField(fields, "targetMarginPct") / 100, label: `margen neto objetivo ${formatPercent(numericField(fields, "targetMarginPct") / 100)}` };
+      if (mode === "value") return { value: numericField(fields, "targetMarginValue"), label: `margen neto objetivo ${formatMoney(numericField(fields, "targetMarginValue"))} unitario` };
+      const current = calendarCurrentPeriod();
+      const currentState = monthlyData[periodKey(current.year, current.month)];
+      if (!currentState) return null;
+      const currentRow = (currentState.rows || []).find((item) => (item.sku || "").trim() === (referenceRow.sku || "").trim());
+      if (!currentRow) return null;
+      const currentItem = calculateStoredRow(currentState.fields, currentRow);
+      return { pct: currentItem.values.netMarginPct, label: `margen neto del mes vigente real ${formatPercent(currentItem.values.netMarginPct)}` };
+    }
+
+    function referenceRowForTarget(rows, fields) {
+      const selected = fields.targetReferenceSku || "__auto";
+      if (selected !== "__auto") return rows.find((row) => (row.sku || "").trim() === selected);
+      return rows.slice().sort((a, b) => (Number(b.units) || 0) - (Number(a.units) || 0))[0];
+    }
+
+    function targetPriceMap(rows, fields) {
+      const referenceRow = referenceRowForTarget(rows, fields);
+      if (!referenceRow) return {};
+      const objective = resolveTargetObjective(referenceRow, fields);
+      if (!objective) return {};
+      const refTarget = objective.value !== undefined
+        ? solveTargetPrice(fields, referenceRow, null, objective.value)
+        : solveTargetPrice(fields, referenceRow, objective.pct, null);
+      if (!refTarget) return {};
+      const refIndex = Number(referenceRow.priceIndex) || 100;
+      return Object.fromEntries(rows.map((row) => {
+        const index = Number(row.priceIndex) || 100;
+        const priceWithVatArs = refTarget.priceWithVatArs * index / refIndex;
+        const rate = numericField(fields, "exchangeRate") || 1;
+        return [(row.sku || "").trim(), {
+          priceWithVatArs,
+          priceInput: row.priceCurrency === "USD" ? priceWithVatArs / rate : priceWithVatArs,
+          label: `${objective.label}. Referencia: ${referenceRow.sku || "SKU"}; price index ${index}`
+        }];
+      }));
+    }
+
+    function targetPriceForRow(rowData, fields) {
+      if (!isFuturePeriod(workYear.value || 2026, currentMonth)) return null;
+      const rows = captureRows();
+      return targetPriceMap(rows, fields)[(rowData.sku || "").trim()] || null;
+    }
+
+    function loadMasterPricing() {
+      try {
+        masterPricing = JSON.parse(localStorage.getItem("bghCosteoMasterPricing")) || null;
+      } catch {
+        masterPricing = null;
+      }
+    }
+
+    function buildMasterPricingFromCurrent() {
+      const fields = captureFieldsFromInputs();
+      return {
+        scrapRate: fields.scrapRate,
+        targetReferenceSku: fields.targetReferenceSku,
+        targetMode: fields.targetMode,
+        targetMarginPct: fields.targetMarginPct,
+        targetMarginValue: fields.targetMarginValue,
+        priceIndexes: Object.fromEntries(captureRows().map((row) => [(row.sku || "").trim(), Number(row.priceIndex) || 100]))
+      };
+    }
+
+    function applyMasterPricingToState(state) {
+      if (!masterPricing || !state) return;
+      state.fields.scrapRate = masterPricing.scrapRate ?? state.fields.scrapRate;
+      state.fields.targetReferenceSku = masterPricing.targetReferenceSku ?? state.fields.targetReferenceSku ?? "__auto";
+      state.fields.targetMode = masterPricing.targetMode ?? state.fields.targetMode ?? "current";
+      state.fields.targetMarginPct = masterPricing.targetMarginPct ?? state.fields.targetMarginPct ?? 15;
+      state.fields.targetMarginValue = masterPricing.targetMarginValue ?? state.fields.targetMarginValue ?? 0;
+      (state.rows || []).forEach((row) => {
+        const sku = (row.sku || "").trim();
+        if (masterPricing.priceIndexes?.[sku] !== undefined) row.priceIndex = masterPricing.priceIndexes[sku];
+      });
+    }
+
+    function saveMasterPricing() {
+      masterPricing = buildMasterPricingFromCurrent();
+      localStorage.setItem("bghCosteoMasterPricing", JSON.stringify(masterPricing));
+      document.getElementById("targetStatus").textContent = "Configuracion general guardada: scrap, criterio de margen, SKU referencia y price index por SKU.";
+    }
+
+    function applyMasterPricingToYear() {
+      if (!masterPricing) saveMasterPricing();
+      const year = Number(workYear.value) || 2026;
+      const activeKey = currentPeriodKey();
+      months.forEach((month, index) => {
+        const key = periodKey(year, month);
+        if (!monthlyData[key]) monthlyData[key] = defaultState(index);
+        applyMasterPricingToState(monthlyData[key]);
+      });
+      localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+      loadState(monthlyData[activeKey]);
+      document.getElementById("targetStatus").textContent = "Configuracion general aplicada a los 12 meses del anio de trabajo. Cada mes sigue editable como excepcion.";
+    }
+
+    function getAllModels() {
+      const names = new Set();
+      Object.values(monthlyData).forEach((state) => {
+        (state.rows || []).forEach((row) => {
+          if ((row.sku || "").trim()) names.add(row.sku.trim());
+        });
+      });
+      return Array.from(names).sort((a, b) => a.localeCompare(b));
+    }
+
+    function updateBenchmarkOptions(models) {
+      const currentValue = benchmarkSku.value || "__auto";
+      benchmarkSku.innerHTML = '<option value="__auto">Auto mayor volumen</option>';
+      const targetCurrentValue = targetReferenceSku.value || "__auto";
+      targetReferenceSku.innerHTML = '<option value="__auto">Auto mayor volumen</option>';
+      models.forEach((model) => {
+        const option = document.createElement("option");
+        option.value = model;
+        option.textContent = model;
+        benchmarkSku.appendChild(option);
+        targetReferenceSku.appendChild(option.cloneNode(true));
+      });
+      benchmarkSku.value = models.includes(currentValue) ? currentValue : "__auto";
+      targetReferenceSku.value = models.includes(targetCurrentValue) ? targetCurrentValue : "__auto";
+    }
+
+    function updateModelFilters() {
+      const models = getAllModels();
+      const previousSelection = new Set(selectedModels);
+      if (!modelFiltersInitialized) models.forEach((model) => previousSelection.add(model));
+      selectedModels = new Set(models.filter((model) => previousSelection.has(model)));
+      modelFiltersInitialized = true;
+      updateBenchmarkOptions(models);
+
+      modelFilters.innerHTML = "";
+      if (models.length === 0) {
+        modelFilters.innerHTML = '<div class="empty-state">Todavia no hay modelos cargados.</div>';
+        return;
+      }
+
+      models.forEach((model) => {
+        const label = document.createElement("label");
+        label.className = "filter-chip";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = selectedModels.has(model);
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) selectedModels.add(model);
+          else selectedModels.delete(model);
+          updateDashboard();
+        });
+        label.appendChild(checkbox);
+        label.appendChild(document.createTextNode(model));
+        modelFilters.appendChild(label);
+      });
+    }
+
+    function renderBarChart(container, rubrics, totalCost) {
+      container.innerHTML = "";
+      if (totalCost <= 0) {
+        container.innerHTML = '<div class="empty-state">No hay costo para graficar con los filtros actuales.</div>';
+        return;
+      }
+      rubrics.forEach((rubric) => {
+        const percent = rubric.value / totalCost;
+        const row = document.createElement("div");
+        row.className = "bar-row";
+        row.title = `${rubric.label}: ${formatDisplayMoney(rubric.displayValue)} (${formatPercent(percent)} del costo)`;
+        row.innerHTML = `
+          <div class="bar-name" title="${rubric.label}">${rubric.label}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.max(percent * 100, 1)}%"></div></div>
+          <div class="bar-value">${formatPercent(percent)}</div>`;
+        container.appendChild(row);
+      });
+    }
+
+    function renderInsights(container, totals, rubrics) {
+      container.innerHTML = "";
+      if (totals.revenue <= 0) {
+        container.innerHTML = '<li>No hay datos para generar conclusiones con los filtros actuales.</li>';
+        return;
+      }
+      const mainCost = rubrics[0];
+      const grossPct = totals.marginBase > 0 ? totals.gross / totals.marginBase : 0;
+      const netPct = totals.marginBase > 0 ? totals.net / totals.marginBase : 0;
+      const financeOnSales = totals.revenue > 0 ? totals.finance / totals.revenue : 0;
+      const macro = totals.macro || {};
+      const insights = [
+        `El rubro con mayor peso en el costeo es ${mainCost.label}, con ${formatPercent(mainCost.value / totals.totalCost)} del costo acumulado.`,
+        `El margen bruto del periodo es ${formatPercent(grossPct)} y el margen neto queda en ${formatPercent(netPct)} luego de descontar financiacion.`,
+        `El costo financiero representa ${formatPercent(financeOnSales)} de la venta sin IVA del periodo.`,
+      ];
+      if (macro.benchmarkSku) insights.push(`SKU base analizado: ${macro.benchmarkSku}. Precio ${Number.isFinite(macro.priceEvolution) ? formatPercent(macro.priceEvolution) : "s/d"}, costo ${Number.isFinite(macro.costEvolution) ? formatPercent(macro.costEvolution) : "s/d"}, devaluacion ${Number.isFinite(macro.devaluation) ? formatPercent(macro.devaluation) : "s/d"} e inflacion oficial ${Number.isFinite(macro.inflation) ? formatPercent(macro.inflation) : "s/d"} en el periodo.`);
+      const priceVsInflation = describeSpread("El precio vs inflacion", macro.priceEvolution - macro.inflation);
+      if (priceVsInflation) insights.push(priceVsInflation);
+      const priceVsDevaluation = describeSpread("El precio vs devaluacion", macro.priceEvolution - macro.devaluation);
+      if (priceVsDevaluation) insights.push(priceVsDevaluation);
+      const priceVsCost = describeSpread("El precio vs costo unitario", macro.priceEvolution - macro.costEvolution);
+      if (priceVsCost) insights.push(priceVsCost);
+      if (Number.isFinite(macro.costEvolution) && Number.isFinite(macro.priceEvolution) && macro.costEvolution > macro.priceEvolution) {
+        insights.push("Alerta: los costos del SKU base crecen mas que el precio, lo que presiona margen si no se corrige precio, mix o eficiencia.");
+      }
+      if (netPct < 0.1) insights.push("Alerta: el margen neto queda por debajo de 10%, conviene revisar precio, TNA, plazo o rubros principales.");
+      if (mainCost.value / totals.totalCost > 0.5) insights.push("El costeo esta muy concentrado en un solo rubro; una variacion ahi puede mover fuerte la rentabilidad.");
+      insights.forEach((text) => {
+        const item = document.createElement("li");
+        item.textContent = text;
+        container.appendChild(item);
+      });
+    }
+
+    async function fetchInflationSeries() {
+      if (inflationCache) return inflationCache;
+      const url = "https://apis.datos.gob.ar/series/api/series?ids=145.3_INGNACNAL_DICI_M_15&format=json&start_date=2024-01-01&limit=200";
+      const data = await fetchJsonWithFallback(url);
+      inflationCache = (data.data || [])
+        .map((row) => ({ date: row[0], period: Number(row[0].slice(0, 4)) * 12 + Number(row[0].slice(5, 7)) - 1, value: Number(row[1]) }))
+        .filter((row) => row.date && Number.isFinite(row.period) && Number.isFinite(row.value))
+        .sort((a, b) => a.period - b.period);
+      return inflationCache;
+    }
+
+    function setMacroMetric(id, value) {
+      document.getElementById(id).textContent = Number.isFinite(value) ? formatPercent(value) : "s/d";
+    }
+
+    function describeSpread(label, spread) {
+      if (!Number.isFinite(spread)) return null;
+      const direction = spread >= 0 ? "por encima" : "por debajo";
+      return `${label} queda ${formatPercent(Math.abs(spread))} ${direction}.`;
+    }
+
+    async function updateInflationMetric(startPeriod, endPeriod, requestId, totals, rubrics) {
+      try {
+        const series = await fetchInflationSeries();
+        if (requestId !== dashboardRequestId) return;
+        const inRange = series.filter((item) => item.period >= startPeriod && item.period <= endPeriod);
+        if (inRange.length < 2) {
+          setMacroMetric("dashInflation", NaN);
+          totals.macro.inflation = NaN;
+          document.getElementById("macroStatus").textContent = "Inflacion oficial: no hay suficientes meses publicados por INDEC para el periodo seleccionado.";
+          renderInsights(document.getElementById("dashboardInsights"), totals, rubrics);
+          return;
+        }
+        const first = inRange[0];
+        const last = inRange[inRange.length - 1];
+        totals.macro.inflation = last.value / first.value - 1;
+        setMacroMetric("dashInflation", totals.macro.inflation);
+        document.getElementById("macroStatus").textContent = `Inflacion oficial IPC Nacional INDEC entre ${first.date.slice(0, 7)} y ${last.date.slice(0, 7)}. SKU base automatico: mayor volumen del periodo filtrado.`;
+        renderInsights(document.getElementById("dashboardInsights"), totals, rubrics);
+      } catch (error) {
+        if (requestId !== dashboardRequestId) return;
+        setMacroMetric("dashInflation", NaN);
+        totals.macro.inflation = NaN;
+        document.getElementById("macroStatus").textContent = "No pude leer inflacion oficial automaticamente. El resto del dashboard sigue funcionando.";
+        renderInsights(document.getElementById("dashboardInsights"), totals, rubrics);
+      }
+    }
+
+    function updateDashboard() {
+      if (!dashboardFromMonth.value || !dashboardToMonth.value) return;
+      let fromIndex = months.indexOf(dashboardFromMonth.value);
+      let toIndex = months.indexOf(dashboardToMonth.value);
+      const fromYear = Number(dashboardFromYear.value) || 2026;
+      const toYear = Number(dashboardToYear.value) || fromYear;
+      const startPeriod = Math.min(fromYear * 12 + fromIndex, toYear * 12 + toIndex);
+      const endPeriod = Math.max(fromYear * 12 + fromIndex, toYear * 12 + toIndex);
+      const totals = {
+        units: 0,
+        revenue: 0,
+        marginBase: 0,
+        gross: 0,
+        finance: 0,
+        net: 0,
+        totalCost: 0,
+        rubrics: Object.fromEntries(costRubrics.map((rubric) => [rubric.key, 0])),
+        display: {
+          revenue: 0,
+          gross: 0,
+          finance: 0,
+          net: 0,
+          rubrics: Object.fromEntries(costRubrics.map((rubric) => [rubric.key, 0]))
+        },
+        skuSeries: {},
+        rates: [],
+        macro: {
+          inflation: NaN,
+          devaluation: NaN,
+          priceEvolution: NaN,
+          costEvolution: NaN,
+          benchmarkSku: ""
+        }
+      };
+
+      for (let period = startPeriod; period <= endPeriod; period += 1) {
+        const year = Math.floor(period / 12);
+        const month = months[period % 12];
+        const state = monthlyData[periodKey(year, month)];
+        if (!state) continue;
+        const rate = numericField(state.fields, "exchangeRate") || 1;
+        totals.rates.push({ period, rate });
+        (state.rows || []).forEach((row) => {
+          const sku = (row.sku || "Sin SKU").trim();
+          if (!selectedModels.has(sku)) return;
+          const item = calculateStoredRow(state.fields, row);
+          if (!totals.skuSeries[sku]) totals.skuSeries[sku] = { units: 0, first: null, last: null };
+          totals.skuSeries[sku].units += item.units;
+          const point = { period, priceNoVat: item.priceNoVat, totalCost: item.values.totalCost };
+          if (!totals.skuSeries[sku].first || period < totals.skuSeries[sku].first.period) totals.skuSeries[sku].first = point;
+          if (!totals.skuSeries[sku].last || period > totals.skuSeries[sku].last.period) totals.skuSeries[sku].last = point;
+          totals.units += item.units;
+          totals.revenue += item.priceNoVat * item.units;
+          totals.marginBase += item.marginBase * item.units;
+          totals.gross += item.values.grossMargin * item.units;
+          totals.finance += item.values.financeCost * item.units;
+          totals.net += item.values.netMargin * item.units;
+          totals.totalCost += item.values.totalCost * item.units;
+          totals.display.revenue += fromArs(item.priceNoVat * item.units, rate);
+          totals.display.gross += fromArs(item.values.grossMargin * item.units, rate);
+          totals.display.finance += fromArs(item.values.financeCost * item.units, rate);
+          totals.display.net += fromArs(item.values.netMargin * item.units, rate);
+          costRubrics.forEach((rubric) => {
+            totals.rubrics[rubric.key] += item.values[rubric.key] * item.units;
+            totals.display.rubrics[rubric.key] += fromArs(item.values[rubric.key] * item.units, rate);
+          });
+        });
+      }
+
+      document.getElementById("dashRevenue").textContent = formatDisplayMoney(totals.display.revenue);
+      document.getElementById("dashUnits").textContent = formatUnits(totals.units);
+      document.getElementById("dashGross").textContent = formatDisplayMoney(totals.display.gross);
+      document.getElementById("dashGrossPct").textContent = formatPercent(totals.marginBase > 0 ? totals.gross / totals.marginBase : 0);
+      document.getElementById("dashNet").textContent = formatDisplayMoney(totals.display.net);
+      document.getElementById("dashNetPct").textContent = formatPercent(totals.marginBase > 0 ? totals.net / totals.marginBase : 0);
+      document.getElementById("dashFinance").textContent = formatDisplayMoney(totals.display.finance);
+
+      const firstRate = totals.rates.sort((a, b) => a.period - b.period)[0];
+      const lastRate = totals.rates.sort((a, b) => b.period - a.period)[0];
+      totals.macro.devaluation = firstRate && lastRate && firstRate.rate > 0 ? lastRate.rate / firstRate.rate - 1 : NaN;
+      setMacroMetric("dashDevaluation", totals.macro.devaluation);
+
+      const seriesEntries = Object.entries(totals.skuSeries);
+      const autoSku = seriesEntries.sort((a, b) => b[1].units - a[1].units)[0]?.[0];
+      const selectedBenchmark = benchmarkSku.value === "__auto" ? autoSku : benchmarkSku.value;
+      const benchmark = selectedBenchmark ? totals.skuSeries[selectedBenchmark] : null;
+      totals.macro.benchmarkSku = selectedBenchmark || "";
+      totals.macro.priceEvolution = benchmark?.first?.priceNoVat > 0 ? benchmark.last.priceNoVat / benchmark.first.priceNoVat - 1 : NaN;
+      totals.macro.costEvolution = benchmark?.first?.totalCost > 0 ? benchmark.last.totalCost / benchmark.first.totalCost - 1 : NaN;
+      setMacroMetric("dashPriceEvolution", totals.macro.priceEvolution);
+      setMacroMetric("dashCostEvolution", totals.macro.costEvolution);
+      document.getElementById("dashPriceEvolution").title = selectedBenchmark ? `SKU base: ${selectedBenchmark}` : "";
+      document.getElementById("dashCostEvolution").title = selectedBenchmark ? `SKU base: ${selectedBenchmark}` : "";
+
+      const rubricValues = costRubrics
+        .map((rubric) => ({ ...rubric, value: totals.rubrics[rubric.key], displayValue: totals.display.rubrics[rubric.key] }))
+        .sort((a, b) => b.value - a.value);
+      renderBarChart(document.getElementById("costBreakdownChart"), rubricValues, totals.totalCost);
+      renderInsights(document.getElementById("dashboardInsights"), totals, rubricValues);
+      const requestId = ++dashboardRequestId;
+      updateInflationMetric(startPeriod, endPeriod, requestId, totals, rubricValues);
+    }
+
+    function persistCurrentMonth() {
+      if (isLoading) return;
+      monthlyData[currentPeriodKey()] = captureState();
+      localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+    }
+
+    function loadState(state) {
+      isLoading = true;
+      fieldIds.forEach((id) => {
+        if (state.fields[id] !== undefined) document.getElementById(id).value = state.fields[id];
+      });
+      skuBody.innerHTML = "";
+      state.rows.forEach(addRow);
+      updateBenchmarkOptions(getAllModels());
+      if (state.fields.targetReferenceSku) targetReferenceSku.value = state.fields.targetReferenceSku;
+      if (state.fields.targetMode) document.getElementById("targetMode").value = state.fields.targetMode;
+      isLoading = false;
+      calculateAll();
+    }
+
+    function addRow(data = {}) {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td><input class="sku sku-col" value="${data.sku || ""}" aria-label="SKU"></td>
+        <td><input class="fob num-col" type="number" min="0" step="0.01" value="${data.fob || 0}"></td>
+        <td><input class="m3 num-col" type="number" min="0" step="0.001" value="${data.m3 || 0}"></td>
+        <td><input class="hours num-col" type="number" min="0" step="0.01" value="${data.hours || 0}"></td>
+        <td><input class="price num-col" type="number" min="0" step="0.01" value="${data.price || 0}"></td>
+        <td><select class="priceCurrency num-col"><option ${data.priceCurrency === "ARS" ? "selected" : ""}>ARS</option><option ${data.priceCurrency === "USD" ? "selected" : ""}>USD</option></select></td>
+        <td><input class="priceIndex num-col" type="number" min="0" step="0.1" value="${data.priceIndex || 100}"></td>
+        <td><input class="termDays num-col" type="number" min="0" step="1" value="${data.termDays || 0}"></td>
+        <td><input class="units num-col" type="number" min="0" step="1" value="${data.units || 0}"></td>
+        ${["fobCost","intlCost","outCost","productionCost","backCost","warehouseCost","distributionCost","taxCost","totalCost","priceNoVat","taxRelief","priceWithVat","targetPrice","grossMargin","grossMarginPct","financeCost","netMargin","netMarginPct","totalNet"].map((name) => `<td class="result ${name}">0</td>`).join("")}
+        <td><button class="secondary removeRow" type="button">X</button></td>`;
+      skuBody.appendChild(row);
+      row.querySelectorAll("input, select").forEach((field) => field.addEventListener("input", () => {
+        calculateAll();
+        persistCurrentMonth();
+      }));
+      row.querySelector(".removeRow").addEventListener("click", () => {
+        row.remove();
+        calculateAll();
+        persistCurrentMonth();
+      });
+      calculateAll();
+    }
+
+    function calculateRow(row) {
+      const iva = readNumber("ivaRate") / 100;
+      const taxReliefRate = readNumber("taxReliefRate") / 100;
+      const taxes = (readNumber("iibbRate") + readNumber("bankTaxRate")) / 100;
+      const tna = readNumber("tnaRate") / 100;
+      const scrap = readNumber("scrapRate") / 100;
+      const fob = Number(row.querySelector(".fob").value) || 0;
+      const m3 = Number(row.querySelector(".m3").value) || 0;
+      const hours = Number(row.querySelector(".hours").value) || 0;
+      const priceWithVatInput = moneyToArs(Number(row.querySelector(".price").value) || 0, row.querySelector(".priceCurrency").value);
+      const priceNoVat = iva > -1 ? priceWithVatInput / (1 + iva) : priceWithVatInput;
+      const taxRelief = priceNoVat * taxReliefRate;
+      const marginBase = priceNoVat + taxRelief;
+      const termDays = Number(row.querySelector(".termDays").value) || 0;
+      const units = Number(row.querySelector(".units").value) || 0;
+
+      const values = {
+        fobCost: fob * exchangeRate(),
+        intlCost: safeDivide(moneyToArs(readNumber("intlFreight"), document.getElementById("intlFreightCurrency").value), readNumber("containerStuffing")),
+        outCost: safeDivide(moneyToArs(readNumber("localFreightOut"), document.getElementById("localFreightOutCurrency").value), readNumber("truckStuffingOut")),
+        productionCost: moneyToArs(readNumber("hourlyCost"), document.getElementById("hourlyCostCurrency").value) * hours + scrap * priceNoVat,
+        backCost: safeDivide(moneyToArs(readNumber("localFreightBack"), document.getElementById("localFreightBackCurrency").value), readNumber("truckStuffingBack")),
+        warehouseCost: moneyToArs(readNumber("warehouseIn"), document.getElementById("warehouseInCurrency").value) + moneyToArs(readNumber("warehouseOut"), document.getElementById("warehouseOutCurrency").value),
+        distributionCost: moneyToArs(readNumber("distributionRate"), document.getElementById("distributionRateCurrency").value) * m3,
+        taxCost: priceNoVat * taxes
+      };
+      values.totalCost = values.fobCost + values.intlCost + values.outCost + values.productionCost + values.backCost + values.warehouseCost + values.distributionCost + values.taxCost;
+      values.priceNoVat = priceNoVat;
+      values.taxRelief = taxRelief;
+      values.priceWithVat = priceWithVatInput;
+      values.grossMargin = marginBase - values.totalCost;
+      values.grossMarginPct = marginBase > 0 ? values.grossMargin / marginBase : 0;
+      values.financeCost = priceNoVat * tna * termDays / 360;
+      values.netMargin = values.grossMargin - values.financeCost;
+      values.netMarginPct = marginBase > 0 ? values.netMargin / marginBase : 0;
+      values.totalNet = values.netMargin * units;
+
+      Object.entries(values).forEach(([key, value]) => {
+        const cell = row.querySelector("." + key);
+        if (key.endsWith("Pct")) {
+          cell.textContent = formatPercent(value);
+          cell.classList.toggle("positive", value >= 0);
+          cell.classList.toggle("negative", value < 0);
+        } else {
+          cell.textContent = formatMoney(value);
+          cell.classList.toggle("positive", key.includes("Margin") && value >= 0);
+          cell.classList.toggle("negative", key.includes("Margin") && value < 0);
+        }
+      });
+
+      const targetCell = row.querySelector(".targetPrice");
+      const target = targetPriceForRow(rowDataFromDom(row), captureFieldsFromInputs());
+      if (target) {
+        targetCell.textContent = formatMoney(target.priceWithVatArs);
+        targetCell.title = target.label || "Precio target sugerido";
+      } else {
+        targetCell.textContent = "Manual/template";
+        targetCell.title = "Disponible solo para meses futuros con referencia y objetivo validos";
+      }
+
+      return {
+        units,
+        revenue: priceNoVat * units,
+        marginBase: marginBase * units,
+        gross: values.grossMargin * units,
+        finance: values.financeCost * units,
+        net: values.netMargin * units
+      };
+    }
+
+    function calculateAll() {
+      const totals = Array.from(skuBody.querySelectorAll("tr")).reduce((acc, row) => {
+        const item = calculateRow(row);
+        acc.units += item.units;
+        acc.revenue += item.revenue;
+        acc.marginBase += item.marginBase;
+        acc.gross += item.gross;
+        acc.finance += item.finance;
+        acc.net += item.net;
+        return acc;
+      }, { units: 0, revenue: 0, marginBase: 0, gross: 0, finance: 0, net: 0 });
+
+      document.getElementById("sumUnits").textContent = formatUnits(totals.units);
+      document.getElementById("sumRevenue").textContent = formatMoney(totals.revenue);
+      document.getElementById("sumGross").textContent = formatMoney(totals.gross);
+      document.getElementById("sumGrossPct").textContent = formatPercent(totals.marginBase > 0 ? totals.gross / totals.marginBase : 0);
+      document.getElementById("sumFinance").textContent = formatMoney(totals.finance);
+      document.getElementById("sumNet").textContent = formatMoney(totals.net);
+      document.getElementById("sumNetPct").textContent = formatPercent(totals.marginBase > 0 ? totals.net / totals.marginBase : 0);
+      if (!isLoading) monthlyData[currentPeriodKey()] = captureState();
+      updateModelFilters();
+      updateDashboard();
+    }
+
+    function suggestFuturePrices() {
+      const status = document.getElementById("targetStatus");
+      const year = Number(workYear.value) || 2026;
+      if (!isFuturePeriod(year, currentMonth)) {
+        status.textContent = "Meses cerrados y mes vigente real: el precio es manual o viene del template. La sugerencia automatica aplica solo para meses futuros.";
+        return;
+      }
+      const fields = captureFieldsFromInputs();
+      const targetMap = targetPriceMap(captureRows(), fields);
+      let applied = 0;
+      Array.from(skuBody.querySelectorAll("tr")).forEach((row) => {
+        const data = rowDataFromDom(row);
+        const target = targetMap[(data.sku || "").trim()];
+        if (!target || !Number.isFinite(target.priceInput)) return;
+        row.querySelector(".price").value = target.priceInput.toFixed(2);
+        applied += 1;
+      });
+      calculateAll();
+      persistCurrentMonth();
+      status.textContent = applied > 0
+        ? `Se aplicaron ${applied} precios target para mantener el margen neto % del mes vigente real.`
+        : "No se aplicaron precios: revisa que los SKUs existan tambien en el mes vigente real.";
+    }
+
+    function suggestFuturePricesSeries() {
+      const status = document.getElementById("targetStatus");
+      const year = Number(workYear.value) || 2026;
+      const activeKey = currentPeriodKey();
+      if (masterPricing) {
+        months.forEach((month, index) => {
+          const key = periodKey(year, month);
+          if (!monthlyData[key]) monthlyData[key] = defaultState(index);
+          applyMasterPricingToState(monthlyData[key]);
+        });
+      }
+
+      let monthsUpdated = 0;
+      let pricesUpdated = 0;
+      months.forEach((month, index) => {
+        if (!isFuturePeriod(year, month)) return;
+        const key = periodKey(year, month);
+        if (!monthlyData[key]) monthlyData[key] = defaultState(index);
+        const state = monthlyData[key];
+        const targetMap = targetPriceMap(state.rows || [], state.fields || {});
+        let monthApplied = 0;
+        (state.rows || []).forEach((row) => {
+          const target = targetMap[(row.sku || "").trim()];
+          if (!target || !Number.isFinite(target.priceInput)) return;
+          row.price = Number(target.priceInput.toFixed(2));
+          monthApplied += 1;
+        });
+        if (monthApplied > 0) {
+          monthsUpdated += 1;
+          pricesUpdated += monthApplied;
+        }
+      });
+
+      localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+      loadState(monthlyData[activeKey]);
+      status.textContent = pricesUpdated > 0
+        ? `Se sugirieron ${pricesUpdated} precios en ${monthsUpdated} meses futuros.`
+        : "No se aplicaron precios futuros: revisa referencia, price index y objetivo de margen.";
+    }
+
+    function resetRows() {
+      skuBody.innerHTML = "";
+      initialRows.forEach(addRow);
+      calculateAll();
+      persistCurrentMonth();
+    }
+
+    function normalizeImportedRows(rows) {
+      return rows
+        .map((row) => ({
+          sku: row.sku || row.SKU || row.Modelo || row.modelo || "",
+          fob: Number(row.fob || row.FOB_USD || row["FOB USD"] || 0),
+          m3: Number(row.m3 || row.M3 || 0),
+          hours: Number(row.hours || row.Tiempo_Hs || row["Tiempo hs"] || 0),
+          price: Number(row.price || row.Precio_Con_IVA || row["Precio con IVA"] || 0),
+          priceCurrency: row.priceCurrency || row.Moneda || "ARS",
+          priceIndex: Number(row.priceIndex || row.Price_Index || row["Price index"] || row["Indice precio"] || 100),
+          termDays: Number(row.termDays || row.Plazo_Dias || row["Plazo dias"] || 0),
+          units: Number(row.units || row.Unidades || 0)
+        }))
+        .filter((row) => row.sku);
+    }
+
+    function parseDelimited(text) {
+      const lines = text.trim().split(/\r?\n/);
+      const separator = lines[0].includes("\t") ? "\t" : ";";
+      const headers = lines.shift().split(separator).map((header) => header.trim());
+      return lines.map((line) => {
+        const values = line.split(separator).map((value) => value.trim());
+        return Object.fromEntries(headers.map((header, index) => [header, values[index] || ""]));
+      });
+    }
+
+    async function importProductFile(file) {
+      let rows = [];
+      if (file.name.toLowerCase().endsWith(".xlsx") || file.name.toLowerCase().endsWith(".xls")) {
+        if (!window.XLSX) {
+          alert("Para leer XLSX, la app necesita internet para cargar la libreria de Excel. Usa el template CSV como alternativa.");
+          return;
+        }
+        const data = await file.arrayBuffer();
+        const workbook = XLSX.read(data);
+        rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      } else {
+        rows = parseDelimited(await file.text());
+      }
+      const importedRows = normalizeImportedRows(rows);
+      if (importedRows.length === 0) {
+        alert("No encontre productos validos en el archivo. Revisá los nombres de columnas del template.");
+        return;
+      }
+      skuBody.innerHTML = "";
+      importedRows.forEach(addRow);
+      calculateAll();
+      persistCurrentMonth();
+      updateModelFilters();
+      updateDashboard();
+    }
+
+    function parseArNumber(value) {
+      return Number(String(value).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, ""));
+    }
+
+    function parseBnaNumber(value) {
+      const text = String(value ?? "").trim();
+      if (!text) return NaN;
+      if (text.includes(",") && text.includes(".")) return parseArNumber(text);
+      if (text.includes(",")) return parseArNumber(text);
+      return Number(text.replace(/[^\d.-]/g, ""));
+    }
+
+    function rofexSymbolFor(year, monthName) {
+      return `DLR${String(months.indexOf(monthName) + 1).padStart(2, "0")}${year}`;
+    }
+
+    function lastDayOfMonth(year, monthIndex) {
+      return new Date(year, monthIndex + 1, 0);
+    }
+
+    function isClosedMonth(year, monthName) {
+      const today = new Date();
+      const selectedPeriod = Number(year) * 12 + months.indexOf(monthName);
+      const currentPeriod = today.getFullYear() * 12 + today.getMonth();
+      return selectedPeriod < currentPeriod;
+    }
+
+    async function fetchTextWithFallback(url) {
+      const attempts = [
+        url,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+        `https://r.jina.ai/http://r.jina.ai/http://${url}`
+      ];
+      let lastError;
+      for (const attempt of attempts) {
+        try {
+          const response = await fetch(attempt);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          return await response.text();
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      throw lastError;
+    }
+
+    async function fetchJsonWithFallback(url) {
+      const text = await fetchTextWithFallback(url);
+      try {
+        return JSON.parse(text);
+      } catch {
+        const jsonStart = text.indexOf("{");
+        const jsonEnd = text.lastIndexOf("}");
+        if (jsonStart >= 0 && jsonEnd > jsonStart) return JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+        throw new Error("La fuente no devolvio JSON utilizable.");
+      }
+    }
+
+    function formatIsoDate(date) {
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+    }
+
+    function parseApiNumber(value) {
+      if (typeof value === "number") return value;
+      const text = String(value ?? "").trim();
+      if (!text) return NaN;
+      return text.includes(",") ? parseArNumber(text) : Number(text);
+    }
+
+    async function findBadlarVariable() {
+      const data = await fetchJsonWithFallback("https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias?Limit=500");
+      const variables = data.results || [];
+      const preferred = variables.find((item) => Number(item.idVariable ?? item.id) === 139)
+        || variables.find((item) => Number(item.idVariable ?? item.id) === 7);
+      if (preferred) return preferred;
+      const variable = variables.find((item) => {
+        const text = `${item.descripcion || ""} ${item.detalle || ""}`.toUpperCase();
+        const unit = String(item.unidadExpresion || "").toUpperCase();
+        return text.includes("BADLAR")
+          && text.includes("BANCOS PRIVADOS")
+          && unit.includes("PORCENTAJE")
+          && unit.includes("NOMINAL ANUAL");
+      });
+      if (!variable) throw new Error("No encontre la variable BADLAR Bancos Privados en BCRA.");
+      return variable;
+    }
+
+    async function fetchLatestBadlar() {
+      const variable = await findBadlarVariable();
+      const value = parseApiNumber(variable.ultValorInformado ?? variable.valor ?? variable.ultimoValor);
+      if (!Number.isFinite(value)) throw new Error("BCRA no devolvio ultimo valor BADLAR utilizable.");
+      return { value, source: "BCRA BADLAR ultimo dato publicado" };
+    }
+
+    async function fetchClosedMonthBadlar(year, monthName) {
+      const variable = await findBadlarVariable();
+      const id = variable.idVariable ?? variable.id;
+      if (!id) throw new Error("BCRA no devolvio id de variable BADLAR.");
+      const monthIndex = months.indexOf(monthName);
+      const from = new Date(Number(year), monthIndex, 1);
+      const to = lastDayOfMonth(Number(year), monthIndex);
+      const url = `https://api.bcra.gob.ar/estadisticas/v4.0/Monetarias/${id}?Desde=${formatIsoDate(from)}&Hasta=${formatIsoDate(to)}&Limit=100`;
+      const data = await fetchJsonWithFallback(url);
+      const detail = data.results?.[0]?.detalle || data.results?.detalle || data.results || [];
+      const sorted = detail
+        .map((item) => ({ fecha: item.fecha, valor: parseApiNumber(item.valor) }))
+        .filter((item) => item.fecha && Number.isFinite(item.valor))
+        .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      if (sorted.length === 0) throw new Error("No encontre BADLAR para el cierre del mes.");
+      return { value: sorted[0].valor, source: `BCRA BADLAR ${new Date(sorted[0].fecha).toLocaleDateString("es-AR")}` };
+    }
+
+    async function updateBadlarFromSource() {
+      const status = document.getElementById("rateStatus");
+      const year = Number(workYear.value) || 2026;
+      const monthName = monthSelect.value || currentMonth;
+      currentMonth = monthName;
+      const selectedStatus = periodStatus(year, monthName);
+      status.textContent = `Actualizando BADLAR para ${monthName} ${year}...`;
+      try {
+        const result = selectedStatus === "closed"
+          ? await fetchClosedMonthBadlar(year, monthName)
+          : await fetchLatestBadlar();
+        document.getElementById("tnaRate").value = result.value.toFixed(2);
+        calculateAll();
+        persistCurrentMonth();
+        status.textContent = `BADLAR ${monthName} ${year}: ${result.value.toLocaleString("es-AR")}% (${result.source}).`;
+      } catch (error) {
+        status.textContent = `No pude actualizar BADLAR automaticamente: ${error.message}. El campo queda editable manualmente.`;
+      }
+    }
+
+    function parseRofexAdjustment(html, symbol) {
+      const documentHtml = new DOMParser().parseFromString(html, "text/html");
+      const rows = Array.from(documentHtml.querySelectorAll("tr"));
+      for (const row of rows) {
+        const cells = Array.from(row.querySelectorAll("td")).map((cell) => cell.textContent.trim());
+        if (cells[0] === symbol && cells[1]) return parseArNumber(cells[1]);
+      }
+      const escaped = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const match = html.match(new RegExp(`${escaped}[\\s\\S]{0,220}?class=["'][^"']*text-number[^"']*["'][^>]*>([^<]+)<`, "i"));
+      return match ? parseArNumber(match[1]) : null;
+    }
+
+    function parseRofexApiSettlement(data, symbol) {
+      const rows = Array.isArray(data?.data) ? data.data : [];
+      const latest = rows
+        .filter((row) => row.symbol === symbol && Number.isFinite(Number(row.settlement)))
+        .sort((a, b) => new Date(b.dateTime) - new Date(a.dateTime))[0];
+      return latest ? { value: Number(latest.settlement), date: latest.dateTime } : null;
+    }
+
+    async function fetchRofexFutureFx(year, monthName) {
+      const symbol = rofexSymbolFor(year, monthName);
+      const params = new URLSearchParams({
+        symbol,
+        page: "1",
+        pageSize: "1",
+        sort: "dateTime",
+        sortDir: "DESC",
+        market: "ROFX"
+      });
+      const data = await fetchJsonWithFallback(`https://apicem.matbarofex.com.ar/api/v2/closing-prices?${params.toString()}`);
+      const result = parseRofexApiSettlement(data, symbol);
+      if (!result?.value) throw new Error(`No encontre contrato exacto ${symbol} en Rofex.`);
+      const date = result.date ? new Date(result.date).toLocaleDateString("es-AR") : "ultimo cierre";
+      return { value: result.value, source: `MATBA Rofex ${symbol} (${date})` };
+    }
+
+    function formatBnaDate(date) {
+      return `${String(date.getDate()).padStart(2, "0")}%2F${String(date.getMonth() + 1).padStart(2, "0")}%2F${date.getFullYear()}`;
+    }
+
+    function parseBnaDate(value) {
+      const match = String(value || "").trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      return match ? new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1])) : null;
+    }
+
+    function sameDay(a, b) {
+      return a && b
+        && a.getFullYear() === b.getFullYear()
+        && a.getMonth() === b.getMonth()
+        && a.getDate() === b.getDate();
+    }
+
+    function parseBnaDivisaVendedor(html, targetDate) {
+      const documentHtml = new DOMParser().parseFromString(html, "text/html");
+      const rows = Array.from(documentHtml.querySelectorAll("tr"))
+        .map((row) => Array.from(row.querySelectorAll("td")).map((cell) => cell.textContent.trim()))
+        .filter((cells) => cells.length >= 4 && /Dolar U\.S\.A/i.test(cells[0]))
+        .map((cells) => ({
+          compra: parseBnaNumber(cells[1]),
+          venta: parseBnaNumber(cells[2]),
+          fecha: parseBnaDate(cells[3])
+        }))
+        .filter((row) => Number.isFinite(row.venta) && row.fecha);
+
+      const exact = rows.find((row) => sameDay(row.fecha, targetDate));
+      if (exact) return exact.venta;
+
+      const latestPrevious = rows
+        .filter((row) => row.fecha <= targetDate && row.fecha.getMonth() === targetDate.getMonth())
+        .sort((a, b) => b.fecha - a.fecha)[0];
+      if (latestPrevious) return latestPrevious.venta;
+
+      const clean = html.replace(/\s+/g, " ");
+      const divisaSection = clean.split(/Cotizaci[oó]n Divisas/i)[1] || clean;
+      const match = divisaSection.match(/Dolar U\.S\.A\s*<\/[^>]+>\s*<[^>]+>\s*([0-9.,]+)\s*<\/[^>]+>\s*<[^>]+>\s*([0-9.,]+)/i)
+        || divisaSection.match(/Dolar U\.S\.A[\s\S]{0,260}?([0-9]{3,5}[.,][0-9]{2,4})[\s\S]{0,80}?([0-9]{3,5}[.,][0-9]{2,4})/i);
+      return match ? parseBnaNumber(match[2]) : null;
+    }
+
+    async function fetchBnaClosedMonthFx(year, monthName) {
+      let cursor = lastDayOfMonth(Number(year), months.indexOf(monthName));
+      const monthIndex = cursor.getMonth();
+      while (cursor.getMonth() === monthIndex) {
+        const url = `https://www.bna.com.ar/Cotizador/HistoricoPrincipales?fecha=${formatBnaDate(cursor)}&idMoneda=55&id=monedas`;
+        try {
+          const html = await fetchTextWithFallback(url);
+          const value = parseBnaDivisaVendedor(html, cursor);
+          if (value) return { value, source: `BNA Divisa Vendedor ${cursor.toLocaleDateString("es-AR")}` };
+        } catch {}
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      throw new Error("No encontre Divisa Vendedor BNA para el cierre del mes.");
+    }
+
+    async function updateExchangeRateFromSource() {
+      const status = document.getElementById("rateStatus");
+      const year = Number(workYear.value) || 2026;
+      const monthName = monthSelect.value || currentMonth;
+      currentMonth = monthName;
+      const selectedStatus = periodStatus(year, monthName);
+      const symbol = rofexSymbolFor(year, monthName);
+      status.textContent = selectedStatus === "closed"
+        ? `Actualizando TC ${monthName} ${year} con BNA...`
+        : `Actualizando TC ${monthName} ${year} con Rofex ${symbol}...`;
+      try {
+        const result = selectedStatus === "closed"
+          ? await fetchBnaClosedMonthFx(year, monthName)
+          : await fetchRofexFutureFx(year, monthName);
+        document.getElementById("exchangeRate").value = result.value.toFixed(2);
+        calculateAll();
+        persistCurrentMonth();
+        status.textContent = `TC ${monthName} ${year}: ${result.value.toLocaleString("es-AR")} (${result.source}).`;
+      } catch (error) {
+        status.textContent = `No pude actualizar TC automaticamente: ${error.message}. El campo queda editable manualmente.`;
+      }
+    }
+
+    async function updateFutureFxSeries() {
+      const status = document.getElementById("rateStatus");
+      const year = Number(workYear.value) || 2026;
+      const activeKey = currentPeriodKey();
+      const realCurrent = calendarCurrentPeriod();
+      status.textContent = `Actualizando Rofex desde mes vigente real (${realCurrent.month} ${realCurrent.year}) y futuros del anio ${year}...`;
+      let updated = 0;
+      let failed = 0;
+      for (const month of months) {
+        const selectedStatus = periodStatus(year, month);
+        if (!["current", "future"].includes(selectedStatus)) continue;
+        const key = periodKey(year, month);
+        if (!monthlyData[key]) monthlyData[key] = defaultState(months.indexOf(month));
+        try {
+          const result = await fetchRofexFutureFx(year, month);
+          monthlyData[key].fields.exchangeRate = result.value.toFixed(2);
+          updated += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+      localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+      loadState(monthlyData[activeKey]);
+      status.textContent = `Rofex actualizado para mes vigente real y futuros: ${updated} meses. Fallidos: ${failed}.`;
+    }
+
+    async function updateClosedMacroSeries() {
+      const status = document.getElementById("rateStatus");
+      const year = Number(workYear.value) || 2026;
+      const activeKey = currentPeriodKey();
+      status.textContent = `Actualizando meses cerrados reales del anio ${year}: TC BNA y BADLAR...`;
+      let updated = 0;
+      let failed = 0;
+      for (const month of months) {
+        if (!isClosedMonth(year, month)) continue;
+        const key = periodKey(year, month);
+        if (!monthlyData[key]) monthlyData[key] = defaultState(months.indexOf(month));
+        try {
+          const [fx, badlar] = await Promise.all([
+            fetchBnaClosedMonthFx(year, month),
+            fetchClosedMonthBadlar(year, month)
+          ]);
+          monthlyData[key].fields.exchangeRate = fx.value.toFixed(2);
+          monthlyData[key].fields.tnaRate = badlar.value.toFixed(2);
+          updated += 1;
+        } catch {
+          failed += 1;
+        }
+      }
+      inflationCache = null;
+      localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+      loadState(monthlyData[activeKey]);
+      status.textContent = `Meses cerrados actualizados: ${updated}. Fallidos: ${failed}. Inflacion se refresca en el dashboard.`;
+    }
+
+    function initCollapsibles() {
+      document.querySelectorAll("main > section").forEach((section) => {
+        const head = section.querySelector(".section-head");
+        if (!head || section.querySelector(".section-body")) return;
+        const body = document.createElement("div");
+        body.className = "section-body";
+        Array.from(section.children).forEach((child) => {
+          if (child !== head) body.appendChild(child);
+        });
+        section.appendChild(body);
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "section-toggle";
+        toggle.textContent = "-";
+        toggle.title = "Contraer o expandir modulo";
+        toggle.addEventListener("click", () => {
+          section.classList.toggle("collapsed");
+          toggle.textContent = section.classList.contains("collapsed") ? "+" : "-";
+        });
+        head.appendChild(toggle);
+      });
+    }
+
+    function initMonths() {
+      months.forEach((month) => {
+        const option = document.createElement("option");
+        option.value = month;
+        option.textContent = month;
+        monthSelect.appendChild(option);
+        dashboardFromMonth.appendChild(option.cloneNode(true));
+        dashboardToMonth.appendChild(option.cloneNode(true));
+      });
+
+      try {
+        monthlyData = JSON.parse(localStorage.getItem("bghCosteoMensual")) || {};
+      } catch {
+        monthlyData = {};
+      }
+      loadMasterPricing();
+
+      if (localStorage.getItem("bghCosteoVersion") !== "2") {
+        migrateLegacyPrices(monthlyData);
+        localStorage.setItem("bghCosteoVersion", "2");
+      }
+
+      months.forEach((month, index) => {
+        const key = periodKey(workYear.value || 2026, month);
+        if (!monthlyData[key]) monthlyData[key] = monthlyData[month] || defaultState(index);
+      });
+
+      currentMonth = months[0];
+      monthSelect.value = currentMonth;
+      dashboardFromMonth.value = months[0];
+      dashboardToMonth.value = months[11];
+      dashboardFromYear.value = workYear.value || 2026;
+      dashboardToYear.value = workYear.value || 2026;
+      loadState(monthlyData[currentPeriodKey()]);
+      updateModelFilters();
+      updateDashboard();
+      localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+    }
+
+    monthSelect.addEventListener("change", () => {
+      persistCurrentMonth();
+      currentMonth = monthSelect.value;
+      const key = currentPeriodKey();
+      if (!monthlyData[key]) monthlyData[key] = defaultState(months.indexOf(currentMonth));
+      loadState(monthlyData[key]);
+      updateModelFilters();
+      updateDashboard();
+    });
+
+    dashboardFromMonth.addEventListener("change", updateDashboard);
+    dashboardToMonth.addEventListener("change", updateDashboard);
+    dashboardFromYear.addEventListener("input", updateDashboard);
+    dashboardToYear.addEventListener("input", updateDashboard);
+    benchmarkSku.addEventListener("change", updateDashboard);
+    workYear.addEventListener("change", () => {
+      persistCurrentMonth();
+      const key = currentPeriodKey();
+      if (!monthlyData[key]) monthlyData[key] = defaultState(months.indexOf(currentMonth));
+      loadState(monthlyData[key]);
+      updateModelFilters();
+      updateDashboard();
+    });
+
+    document.getElementById("selectAllModels").addEventListener("click", () => {
+      selectedModels = new Set(getAllModels());
+      updateModelFilters();
+      updateDashboard();
+    });
+
+    document.getElementById("clearModels").addEventListener("click", () => {
+      selectedModels = new Set();
+      modelFiltersInitialized = true;
+      updateModelFilters();
+      updateDashboard();
+    });
+
+    document.getElementById("copyNextMonth").addEventListener("click", () => {
+      persistCurrentMonth();
+      const index = months.indexOf(currentMonth);
+      if (index < months.length - 1) {
+        const nextMonth = months[index + 1];
+        monthlyData[periodKey(workYear.value || 2026, nextMonth)] = clone(monthlyData[currentPeriodKey()]);
+        currentMonth = nextMonth;
+        monthSelect.value = nextMonth;
+        loadState(monthlyData[currentPeriodKey()]);
+        localStorage.setItem("bghCosteoMensual", JSON.stringify(monthlyData));
+        updateModelFilters();
+        updateDashboard();
+      }
+    });
+
+    document.getElementById("addRow").addEventListener("click", () => {
+      addRow({ sku: "Nuevo SKU", priceCurrency: "ARS", termDays: 30, units: 1 });
+      persistCurrentMonth();
+    });
+
+    document.getElementById("suggestFuturePrices").addEventListener("click", suggestFuturePrices);
+    document.getElementById("suggestFuturePricesSeries").addEventListener("click", suggestFuturePricesSeries);
+    document.getElementById("saveMasterPricing").addEventListener("click", saveMasterPricing);
+    document.getElementById("applyMasterPricing").addEventListener("click", applyMasterPricingToYear);
+    document.getElementById("resetRows").addEventListener("click", resetRows);
+    document.getElementById("fetchBadlar").addEventListener("click", updateBadlarFromSource);
+    document.getElementById("fetchRofexFx").addEventListener("click", updateExchangeRateFromSource);
+    document.getElementById("updateFutureFxSeries").addEventListener("click", updateFutureFxSeries);
+    document.getElementById("updateClosedMacroSeries").addEventListener("click", updateClosedMacroSeries);
+    document.getElementById("productFile").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (file) importProductFile(file);
+      event.target.value = "";
+    });
+
+    document.querySelectorAll("input, select").forEach((field) => {
+      if (!["monthSelect", "workYear", "dashboardFromMonth", "dashboardToMonth", "dashboardFromYear", "dashboardToYear", "benchmarkSku"].includes(field.id)) {
+        field.addEventListener("input", () => {
+          calculateAll();
+          persistCurrentMonth();
+        });
+      }
+    });
+
+    initCollapsibles();
+    initMonths();
+  </script>
+</body>
+</html>

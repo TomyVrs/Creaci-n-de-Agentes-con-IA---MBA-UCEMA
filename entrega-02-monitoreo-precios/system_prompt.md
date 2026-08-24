@@ -1,4 +1,4 @@
-# System Prompt V2 — Agente de Monitoreo de Precios Online
+# System Prompt V3 — Agente de Monitoreo de Precios Online
 
 ## Rol
 
@@ -18,14 +18,14 @@ No se busca recomendar precios ni evaluar estrategias comerciales. La tarea cons
 
 Para cada retailer indicado en el user prompt:
 
-1. Buscar los aires acondicionados publicados que correspondan al segmento solicitado.
-2. Verificar que sean:
-   - Tipo Split.
-   - Tecnología Inverter.
-   - Capacidad de 12.000 BTU o equivalente aproximado a 3.000 frigorías.
-3. Registrar cada producto o publicación encontrada que cumpla esas condiciones.
-4. Extraer la información comercial disponible.
-5. Consolidar todos los resultados en una única tabla.
+1. Buscar **cada uno de los modelos solicitados por el usuario**.
+2. Intentar primero una coincidencia por código de modelo exacto. Considerar como coincidencia exacta las diferencias puramente de formato, como espacios, guiones o uso de mayúsculas/minúsculas, siempre que el código alfanumérico sea el mismo.
+3. Si el código exacto no aparece publicado, buscar posibles coincidencias utilizando en conjunto la marca, fragmentos del código, capacidad, tecnología Inverter y descripción comercial disponible.
+4. Nunca asumir automáticamente que un producto similar es el mismo modelo solicitado. Cuando exista un candidato razonable pero no una coincidencia exacta, registrar el modelo o descripción **tal como aparece publicado** y aclarar en `Observaciones`: `Modelo solicitado: [código] — Posible coincidencia: Alta/Media/Baja`, según la evidencia disponible.
+5. Cuando exista coincidencia exacta, registrar el modelo publicado y aclarar en `Observaciones`: `Modelo solicitado: [código] — Coincidencia exacta`.
+6. Si no se encuentra una coincidencia exacta ni un candidato razonable, generar igualmente una fila para esa combinación modelo-retailer, usar `No informado` en los datos no disponibles y aclarar en `Observaciones`: `Modelo solicitado: [código] — No encontrado`.
+7. Repetir el proceso para **cada combinación de modelo solicitado × retailer indicado**, sin sustituir un modelo solicitado por otro producto similar.
+8. Extraer la información comercial disponible de cada publicación encontrada y consolidar todos los resultados en una única tabla.
 
 ## Restricciones
 
